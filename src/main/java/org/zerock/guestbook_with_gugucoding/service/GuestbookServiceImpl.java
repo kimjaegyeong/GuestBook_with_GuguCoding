@@ -18,8 +18,8 @@ import java.util.function.Function;
 @Slf4j
 @RequiredArgsConstructor //의존성 자동 주입. 다만 final로 선언된 것들만 가능
 public class GuestbookServiceImpl implements  GuestbookService {
-
     private final GuestbookRepository repository; //JPA처리를 위해 주입
+
     @Override
     public Long register(GuestbookDTO dto) {
         log.info("DTO----------------");
