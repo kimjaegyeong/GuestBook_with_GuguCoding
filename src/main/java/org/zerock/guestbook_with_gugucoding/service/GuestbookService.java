@@ -9,6 +9,7 @@ import org.zerock.guestbook_with_gugucoding.dto.GuestbookDTO;
 public interface GuestbookService {
     Long register(GuestbookDTO dto);
     PageResultDTO<GuestbookDTO , Guestbook> getList(PageRequestDTO requestDTO);
+    GuestbookDTO read(Long gno);
     default Guestbook dtoToEntity(GuestbookDTO dto){
         Guestbook entity = Guestbook.builder()
                 .gno(dto.getGno())

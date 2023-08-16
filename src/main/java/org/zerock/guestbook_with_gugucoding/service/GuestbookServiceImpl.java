@@ -12,6 +12,7 @@ import org.zerock.guestbook_with_gugucoding.dto.PageResultDTO;
 import org.zerock.guestbook_with_gugucoding.entity.Guestbook;
 import org.zerock.guestbook_with_gugucoding.repository.GuestbookRepository;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -39,6 +40,12 @@ public class GuestbookServiceImpl implements  GuestbookService {
         Page<Guestbook> result = repository.findAll(pageable); //jpa가 제공하는 findAll메소드 사용. 설정한 페이지 조건으로 데이터를 가져오나봄.
         Function<Guestbook, GuestbookDTO> fn = (entity -> entityToDto(entity));
         return new PageResultDTO<>(result, fn);
+    }
+
+    @Override
+    public GuestbookDTO read(Long gno) {
+        Optional<Guestbook> result = repository.findById(gno);
+        return result.isPresent()? entityToDto(result.get()) : null;
     }
 
 
