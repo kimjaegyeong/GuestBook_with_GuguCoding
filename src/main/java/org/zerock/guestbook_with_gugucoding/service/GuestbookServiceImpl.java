@@ -1,5 +1,7 @@
 package org.zerock.guestbook_with_gugucoding.service;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -10,6 +12,7 @@ import org.zerock.guestbook_with_gugucoding.dto.GuestbookDTO;
 import org.zerock.guestbook_with_gugucoding.dto.PageRequestDTO;
 import org.zerock.guestbook_with_gugucoding.dto.PageResultDTO;
 import org.zerock.guestbook_with_gugucoding.entity.Guestbook;
+import org.zerock.guestbook_with_gugucoding.entity.QGuestbook;
 import org.zerock.guestbook_with_gugucoding.repository.GuestbookRepository;
 
 import java.util.Optional;
@@ -36,8 +39,10 @@ public class GuestbookServiceImpl implements  GuestbookService {
     @Override
     public PageResultDTO<GuestbookDTO, Guestbook> getList(PageRequestDTO requestDTO) {
         Pageable pageable = requestDTO.getPageable(Sort.by("gno").descending()); //페이지 설정 및 정렬조건
+        BooleanBuilder booleanBuilder =  getSearch(requestDTO);
+        Page<Guestbook> result = repository.findAll(booleanBuilder,pageable); //jpa가 제공하는 findAll메소드 사용. 설정한 페이지 조건으로 데이터를 가져오나봄.
+        //Querydsl 사용
 
-        Page<Guestbook> result = repository.findAll(pageable); //jpa가 제공하는 findAll메소드 사용. 설정한 페이지 조건으로 데이터를 가져오나봄.
         Function<Guestbook, GuestbookDTO> fn = (entity -> entityToDto(entity));
         return new PageResultDTO<>(result, fn);
     }
@@ -63,5 +68,37 @@ public class GuestbookServiceImpl implements  GuestbookService {
             entity.changeContent(dto.getContent());
             repository.save(entity);
         }
+    }
+
+    private BooleanBuilder getSearch(PageRequestDTO requestDTO){
+        //Querydsl 처리
+        String type= requestDTO.getType();
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        QGuestbook qGuestbook = QGuestbook.guestbook;
+        String keyword = requestDTO.getKeyword();
+        BooleanExpression expression = qGuestbook.gno.gt(0L); //gno가 0보다 큰 경우 전부
+        booleanBuilder.and(expression); // 조건 : gno가 0보다 큰 경우 이면서 ....
+
+        if(type==null || type.trim().length()==0){//검색조건이 없는 경우
+            return booleanBuilder; //위에서 만들어진 booleanBuilder를 return. (exp: gno가 0보다 큰 경우..)
+        }
+
+        //검색 조건 작성하기
+        BooleanBuilder conditionBuilder = new BooleanBuilder();
+        if(type.contains("t")){
+            conditionBuilder.or(qGuestbook.title.contains(keyword));
+        }
+        if(type.contains("c")){
+            conditionBuilder.or(qGuestbook.content.contains(keyword));
+        }
+        if(type.contains("w")){
+            conditionBuilder.or(qGuestbook.writer.contains(keyword));
+        }
+
+        //모든 조건 통합
+        booleanBuilder.and(conditionBuilder); //booleanBuilder를 booleanBuilder와 and 연산했다.
+
+        return booleanBuilder;
+
     }
 }
