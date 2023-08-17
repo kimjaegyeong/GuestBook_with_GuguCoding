@@ -58,7 +58,7 @@
 
         actionForm.empty(); //form 태그의 모든 내용을 지우고
         actionForm.append(pageInfo); //목록페이지 이동에 필요한 내용을 다시 추가
-        actionForm.attr("action","/guestbook.list")
+        actionForm.attr("action","/guestbook/list")
                 .attr("method","get");
 
         console.log(actionForm.html()); //먼저 확인후에 주석 처리
